@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 6 Grzybowski</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+  <style>
+    #map { height: 400px; }
+  </style>  
+</head>
+<body>
+  <h1>Grzybowski Lab 6</h1>
+  <div id="map"></div>
+  <div id="coordinates"></div>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([37.0902, -95.7129], 4);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    function getRandomInRange(from, to, fixed) {
+      return (Math.random() * (to - from) + from).toFixed(fixed) * 1;
+    }
+
+    const coordinates = [
+      { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) },
+      { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) },
+      { lat: getRandomInRange(30, 35, 3), lng: getRandomInRange(-100, -90, 3) }
+    ];
+
+    coordinates.forEach((coord, index) => {
+      const marker = L.marker([coord.lat, coord.lng]).addTo(map);
+      fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coord.lat}&longitude=${coord.lng}&localityLanguage=en`)
+        .then(response => response.json())
+        .then(data => {
+          const locality = data.locality || 'Unknown location';
+          document.getElementById('coordinates').innerHTML += `
+            <p>Marker ${index + 1} (Randomly Generated Coordinates: ${coord.lat}, ${coord.lng})</p>
+            <p>Locality: ${locality}</p>`;
+        })
+        .catch(error => {
+          console.error('Error fetching locality:', error);
+          document.getElementById('coordinates').innerHTML += `
+            <p>Marker ${index + 1} (Randomly Generated Coordinates: ${coord.lat}, ${coord.lng})</p>
+            <p>Locality: Error fetching locality</p>`;
+        });
+    });
+  </script>
+</body>
+</html>
